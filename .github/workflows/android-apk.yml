@@ -33,10 +33,10 @@ jobs:
       - name: Extract Android project
         run: unzip AstroVani_Android_Source.zip -d extracted
 
-      - name: Build APK
+      - 
+name: Build APK
         working-directory: extracted/AstroVani_Android
         run: gradle assembleDebug
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
