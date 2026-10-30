@@ -1,4 +1,3 @@
-
 name: Build AstroVani Android APK
 
 on:
@@ -12,6 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
           java-version: '17'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v3
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -31,25 +31,19 @@ jobs:
           gradle-version: '8.9'
 
       - name: Extract Android project
-        run: unzip AstroVani_Android_Source.zip -d extracted
+        run: unzip -o AstroVani_Android_Source.zip -d extracted
 
       - name: Build APK
         working-directory: extracted/AstroVani_Android
         run: |
-          cat > /tmp/jvm17.init.gradle <<'EOF'
+          cat > /tmp/kotlin-target.gradle <<'EOF'
           allprojects {
-            tasks.withType(JavaCompile).configureEach {
-              sourceCompatibility = '17'
-              targetCompatibility = '17'
-            }
-            afterEvaluate {
-              tasks.matching { it.name == 'compileDebugKotlin' }.configureEach {
-                kotlinOptions.jvmTarget = '17'
-              }
+            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+              kotlinOptions.jvmTarget = "1.8"
             }
           }
           EOF
-          gradle -I /tmp/jvm17.init.gradle assembleDebug
+          gradle -I /tmp/kotlin-target.gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
