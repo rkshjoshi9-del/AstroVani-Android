@@ -32,14 +32,23 @@ jobs:
 
       - name: Extract Android project
         run: unzip AstroVani_Android_Source.zip -d extracted
-
-      - 
-name: Build APK
+      - name: Build APK
         working-directory: extracted/AstroVani_Android
-        run: gradle assembleDebug
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
+        run: |
+          cat > /tmp/jvm17.init.gradle <<'EOF'
+          allprojects {
+            tasks.withType(JavaCompile).configureEach {
+              sourceCompatibility = '17'
+              targetCompatibility = '17'
+            }
+            afterEvaluate {
+              tasks.matching { it.name == 'compileDebugKotlin' }.configureEach {
+                kotlinOptions.jvmTarget = '17'
+              }
+            }
+          }
+          EOF
+          gradle -I /tmp/jvm17.init.gradle assembleDebug
           name: AstroVani-debug-apk
           path: extracted/AstroVani_Android/app/build/outputs/apk/debug/app-debug.apk
           
